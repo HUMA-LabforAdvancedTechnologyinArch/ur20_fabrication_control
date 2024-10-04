@@ -23,6 +23,7 @@ RUN echo "Building UR Planners for ROS" \
     && rm -rf $CATKIN_WS/src/universal_robot \
     # Clone the repositories from ROS-Industrial
     && git clone -b noetic-devel https://github.com/ros-industrial/universal_robot.git \
+    # Cloning the UR ROS driver... Enables real-time ROS data exchange, but has conflicts with RTDE.
     # && git clone https://github.com/UniversalRobots/Universal_Robots_ROS_Driver.git \
     # Install dependencies
     && cd $CATKIN_WS \
