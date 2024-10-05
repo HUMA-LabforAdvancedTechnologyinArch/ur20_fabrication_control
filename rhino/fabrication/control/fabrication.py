@@ -238,25 +238,12 @@ def send_trajectory_path(configurations, speed, accel, radius, ur_c):
     print(f"Move trajectory of {len(configurations)} points with speed {speed}, accel {accel} and blend {radius}")
     
     path = []
-
    
     for config in configurations:
         path.append(config.joint_values + [speed, accel, radius])
 
     if len(path):
         ur_c.moveJ(path)
-    
-    # for i in range(len(configurations)):
-
-    #     #Trajectory points
-    #     point = list(configurations[i].values())
-    #     print (point)
-    #     #Joint values
-    #     # joint = [math.degrees(item) for item in point.values()
-    #     path.append(point+[speed,accel,radius])
-
-    # ur_c.moveJ(path, False)
-
 
 
 def pick_and_place_blocks_trajectories(move_to_pick_trajectory, pick_trajectory, move_trajectory, place_trajectory, speed, accel, radius, ip, vaccum_io):
@@ -315,6 +302,75 @@ def pick_and_place_blocks_trajectories(move_to_pick_trajectory, pick_trajectory,
     except Exception as e:
         print(e)
         raise
+
+def pick_and_place_jk(pick_trajectory_configs, move_trajectory_configs, place_trajectory_configs, speed, accel, radius, ip, vaccum_io=None):
+
+    ur_c = RTDEControl(ip)
+    #reverse pick configs list for safety movement
+    pick_trajectory_configs_reversed = list(reversed(pick_trajectory_configs)) 
+    nowait = True
+
+    try:
+        if vaccum_io != None:
+            #Turn on io to release stick that is being held
+            set_digital_io(vaccum_io,True,ip=ip)
+            #sleep on position to give some time for release
+            time.sleep(1.0)
+
+        #Send pick trajectoy
+        send_trajectory_path(pick_trajectory_configs, speed, accel, radius,ur_c)
+
+        if vaccum_io != None:
+            #Turn off io to grasp new stick
+            set_digital_io(vaccum_io, False, ip=ip)
+
+        #Send pick_trajectory_configs to reversed
+        send_trajectory_path(pick_trajectory_configs_reversed, speed, accel, radius,ur_c)
+        
+        #Send to move configs list
+        send_trajectory_path(move_trajectory_configs, speed, accel, 0.0, ur_c)
+
+        #Send to place trajectory
+        send_trajectory_path(place_trajectory_configs, speed/3., accel, 0.0, ur_c)
+
+    except Exception as e:
+        print(e)
+        raise
+
+def exit_pick_and_place_jk(pick_trajectory_configs, move_trajectory_configs, place_trajectory_configs, speed, accel, radius, ip, vaccum_io=None):
+
+    ur_c = RTDEControl(ip)
+    #reverse pick configs list for safety movement
+    pick_trajectory_configs_reversed = list(reversed(pick_trajectory_configs)) 
+    nowait = True
+
+    try:
+        if vaccum_io != None:
+            #Turn on io to release stick that is being held
+            set_digital_io(vaccum_io,True,ip=ip)
+            #sleep on position to give some time for release
+            time.sleep(1.0)
+
+        #Send pick trajectoy
+        send_trajectory_path(pick_trajectory_configs, speed, accel, radius,ur_c)
+
+        if vaccum_io != None:
+            #Turn off io to grasp new stick
+            set_digital_io(vaccum_io, False, ip=ip)
+
+        #Send pick_trajectory_configs to reversed
+        send_trajectory_path(pick_trajectory_configs_reversed, speed, accel, radius,ur_c)
+        
+        #Send to move configs list
+        send_trajectory_path(move_trajectory_configs, speed, accel, 0.0, ur_c)
+
+        #Send to place trajectory
+        send_trajectory_path(place_trajectory_configs, speed/3., accel, 0.0, ur_c)
+
+    except Exception as e:
+        print(e)
+        raise
+
 
 def release_pick_and_place_stick_trajectories(exit_trajectory, move_to_pick_trajectory, pick_trajectory, move_trajectory, place_trajectory, speed, accel, radius, ip, vaccum_io):
     
