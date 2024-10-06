@@ -337,6 +337,25 @@ def pick_and_place_jk(pick_trajectory_configs, move_trajectory_configs, place_tr
         print(e)
         raise
 
+def send_to_single_trajectory(trajectory_configs, speed, accel, radius, nowait, ip, vaccum_io=None):
+
+    ur_c = RTDEControl(ip)
+    nowait = True
+
+    try:
+        if vaccum_io != None:
+            #Turn on io to release stick that is being held
+            set_digital_io(vaccum_io,True,ip=ip)
+            #sleep on position to give some time for release
+            time.sleep(1.0)
+
+        #Send pick trajectoy
+        send_trajectory_path(trajectory_configs, speed, accel, radius,ur_c)
+    
+    except Exception as e:
+        print(e)
+        raise
+
 def exit_pick_and_place_jk(pick_trajectory_configs, move_trajectory_configs, place_trajectory_configs, speed, accel, radius, ip, vaccum_io=None):
 
     ur_c = RTDEControl(ip)
